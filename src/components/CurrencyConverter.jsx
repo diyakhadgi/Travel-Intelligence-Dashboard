@@ -14,6 +14,7 @@ const CurrencyConverter = ({ countryCode }) => {
   useEffect(() => {
     if (!countryCode) return;
 
+    // fetching exchange rate
     const fetchExchangeRate = async () => {
       setIsLoading(true);
       setError(null);
