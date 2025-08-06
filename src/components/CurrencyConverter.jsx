@@ -26,7 +26,6 @@ const CurrencyConverter = ({ countryCode }) => {
       setIsLoading(true);
       setError(null);
 
-      // Offline mode
       if (!navigator.onLine) {
         const cached = localStorage.getItem(storageKey);
         if (cached) {
@@ -40,7 +39,6 @@ const CurrencyConverter = ({ countryCode }) => {
         return;
       }
 
-      // Online mode
       try {
         const response = await axios.get(
           `https://v6.exchangerate-api.com/v6/${api_key}/pair/${baseCurrency}/${localCurrency}`
@@ -50,7 +48,6 @@ const CurrencyConverter = ({ countryCode }) => {
         setExchangeRate(rate);
         setConvertedAmount(amount * rate);
 
-        // Save to localStorage
         localStorage.setItem(storageKey, JSON.stringify({ rate }));
       } catch (err) {
         setError("Failed to fetch currency data");
@@ -60,7 +57,13 @@ const CurrencyConverter = ({ countryCode }) => {
     };
 
     fetchExchangeRate();
-  }, [countryCode, baseCurrency, amount, api_key]);
+  }, [countryCode, baseCurrency, api_key]);
+
+  useEffect(() => {
+    if (exchangeRate) {
+      setConvertedAmount(amount * exchangeRate);
+    }
+  }, [amount, exchangeRate]);
 
   const handleAmountChange = (e) => {
     const value = parseFloat(e.target.value) || 0;
@@ -72,20 +75,21 @@ const CurrencyConverter = ({ countryCode }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg p-4 max-w-md mx-auto">
-      <h3 className="text-lg font-semibold mb-3">Currency Converter</h3>
+    <div className="bg-white rounded-2xl p-6 shadow-md">
+      <h3 className="text-lg font-semibold mb-4 text-center">Currency Converter</h3>
 
       {isLoading ? (
-        <div className="text-center py-4">Loading..</div>
+        <div className="text-center py-4 text-blue-500 font-medium">Loading...</div>
       ) : error ? (
         <div className="text-red-500 text-center">{error}</div>
       ) : (
         <>
-          <div className="flex flex-row justify-evenly">
+          
+          <div className="flex flex-wrap md:flex-nowrap items-center justify-center gap-4">
             <select
               value={baseCurrency}
               onChange={handleCurrencyChange}
-              className="mr-2"
+              className="border border-gray-300 rounded-xl p-2 text-sm w-24 text-center focus:outline-none focus:ring-2 focus:ring-blue-400"
             >
               <option value="USD">USD</option>
               <option value="EUR">EUR</option>
@@ -96,20 +100,23 @@ const CurrencyConverter = ({ countryCode }) => {
               value={amount}
               onChange={handleAmountChange}
               min="0"
-              className="outline-gray-400"
+              className="border border-gray-300 rounded-xl p-2 w-28 text-center focus:outline-none focus:ring-2 focus:ring-blue-400"
+              placeholder="Amount"
             />
-          </div>
-          <div className="flex flex-row justify-evenly mt-2">
+
             <input
               type="text"
               readOnly
               value={convertedAmount.toFixed(2)}
-              className="outline-gray-400"
+              className="border border-gray-300 rounded-xl p-2 w-28 text-center bg-gray-100"
             />
-            <span>{countries[countryCode]}</span>
+
+            <span className="font-semibold">{countries[countryCode]}</span>
           </div>
+
+          {/* Conversion rate */}
           {exchangeRate && (
-            <div className="mt-2 text-sm text-gray-600">
+            <div className="mt-4 text-sm text-gray-600 text-center">
               Rate: 1 {baseCurrency} = {exchangeRate.toFixed(4)}{" "}
               {countries[countryCode]}
             </div>

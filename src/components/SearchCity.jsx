@@ -23,7 +23,7 @@ const SearchCity = ({ getWeatherDetails, setRecentCities, setActiveCity }) => {
 
     const city = searchedCity.trim();
 
-    // Offline: try load from cache first
+    // Offline try load from cache first
     if (!navigator.onLine) {
       const cached = localStorage.getItem(`weatherData_${city}`);
       if (cached) {
@@ -38,38 +38,35 @@ const SearchCity = ({ getWeatherDetails, setRecentCities, setActiveCity }) => {
       return;
     }
 
-    // Online: fetch from API
+    // Online fetch from API
     try {
       const response = await axios.get(apiUrl + city + `&appid=${api_key}`);
 
-      // Parse relevant info to keep
+      
       const weatherData = {
-        temperature: response.data.main.temp,
-        description: response.data.weather[0].main,
-        feels_like: response.data.main.feels_like,
-        humidity: response.data.main.humidity,
-        wind: response.data.wind.speed,
+        main: response.data.main,
+        wind: response.data.wind,
         countryCode: response.data.sys.country,
         name: response.data.name,
+        weather: response.data.weather[0],
       };
 
-      // Pass parsed data up to parent
+      
       getWeatherDetails(weatherData);
 
-
-      // Save to localStorage for offline access
+      
       localStorage.setItem(
         `weatherData_${searchedCity}`,
-        JSON.stringify(response.data)
+        JSON.stringify(weatherData)
       );
 
-      // Update recent cities
+      
       let storedCities = JSON.parse(localStorage.getItem("recentCities")) || [];
       storedCities = storedCities.filter(
         (city) => city.toLowerCase() !== searchedCity.toLowerCase()
       );
-      storedCities.unshift(searchedCity); // Add new city to top
-      storedCities = storedCities.slice(0, 3); // Keep max 3
+      storedCities.unshift(searchedCity);
+      storedCities = storedCities.slice(0, 3); 
       localStorage.setItem("recentCities", JSON.stringify(storedCities));
       setRecentCities(storedCities);
       setActiveCity(searchedCity);

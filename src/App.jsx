@@ -11,11 +11,11 @@ function App() {
   const [currentWeather, setCurrentWeather] = useState(null);
   const [recentCities, setRecentCities] = useState([]);
   const [activeCity, setActiveCity] = useState(null);
-  const [hasSearched, setHasSearched] = useState(false); // ✅ NEW STATE
+  const [hasSearched, setHasSearched] = useState(false); 
 
   const getWeatherDetails = (weatherData) => {
     setCurrentWeather(weatherData);
-    setHasSearched(true); // ✅ Mark that user has searched
+    setHasSearched(true); 
   };
 
   const handleRecentClick = (city) => {
@@ -23,10 +23,11 @@ function App() {
     if (cached) {
       const parsed = JSON.parse(cached);
       setCurrentWeather(parsed);
+      console.log('Weather ', currentWeather)
       setActiveCity(city);
-      setHasSearched(true); // ✅ Show recent cities if a recent city is clicked
+      setHasSearched(true);
     } else {
-      alert("No cached data available for this city. Please search online.");
+      alert("Data not found.");
     }
   };
 
@@ -47,7 +48,7 @@ function App() {
         </div>
       </Suspense>
 
-      {/* ✅ Only show recentCities if the user has searched */}
+     
       {recentCities.length > 0 && hasSearched && (
         <div className="mt-4 text-center">
           <h4 className="font-semibold text-white mb-2">Recent Cities</h4>
