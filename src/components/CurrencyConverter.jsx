@@ -14,23 +14,44 @@ const CurrencyConverter = ({ countryCode }) => {
   useEffect(() => {
     if (!countryCode) return;
 
-    // fetching exchange rate
+    const localCurrency = countries[countryCode];
+    if (!localCurrency) {
+      setError("Currency not found");
+      return;
+    }
+
+    const storageKey = `currency_${baseCurrency}_${localCurrency}`;
+
     const fetchExchangeRate = async () => {
       setIsLoading(true);
       setError(null);
 
-      try {
-        const localCurrency = countries[countryCode];
-        if (!localCurrency) {
-          throw new Error("Currency not found");
+      // Offline mode
+      if (!navigator.onLine) {
+        const cached = localStorage.getItem(storageKey);
+        if (cached) {
+          const cachedRate = JSON.parse(cached);
+          setExchangeRate(cachedRate.rate);
+          setConvertedAmount(amount * cachedRate.rate);
+        } else {
+          setError("You're offline and no cached exchange data found.");
         }
+        setIsLoading(false);
+        return;
+      }
 
+      // Online mode
+      try {
         const response = await axios.get(
           `https://v6.exchangerate-api.com/v6/${api_key}/pair/${baseCurrency}/${localCurrency}`
         );
 
-        setExchangeRate(response.data.conversion_rate);
-        setConvertedAmount(amount * response.data.conversion_rate);
+        const rate = response.data.conversion_rate;
+        setExchangeRate(rate);
+        setConvertedAmount(amount * rate);
+
+        // Save to localStorage
+        localStorage.setItem(storageKey, JSON.stringify({ rate }));
       } catch (err) {
         setError("Failed to fetch currency data");
       } finally {
